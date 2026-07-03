@@ -1,0 +1,1631 @@
+<!--
+  RZTI (Realization-Zoom Type Indicator) — 创客与极客行为偏好分类工具
+  Copyright (C) 2026  RZTI Contributors
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+  ADDITIONAL TERM (Section 7 AGPLv3):
+  All derivative works must preserve the "RZTI" brand attribution in the
+  user interface and source code. See LICENSE for full terms.
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RZTI 人格测试</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+:root {
+  --paper: #E8DCC8;
+  --paper-dark: #D4C4A8;
+  --ink: #1A1610;
+  --ink-light: #3D3528;
+  --ink-muted: #6B5D4A;
+  --accent-rust: #B84C32;
+  --accent-teal: #2A7B6F;
+  --card-bg: rgba(255,252,245,0.85);
+  --border-draft: #9B8B72;
+  --grid-line: rgba(107,93,74,0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+  --font-pixel: 'Press Start 2P', cursive;
+  --font-cn: 'Noto Sans SC', -apple-system, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-cn);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.65;
+}
+
+/* Blueprint texture + grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 39px, var(--grid-line) 39px, var(--grid-line) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, var(--grid-line) 39px, var(--grid-line) 40px);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 30% 20%, rgba(184,76,50,0.06), transparent),
+    radial-gradient(ellipse 60% 40% at 75% 80%, rgba(42,123,111,0.05), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ---------- Progress Bar ---------- */
+.progress-wrap {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--paper-dark);
+  z-index: 100;
+  border-bottom: 1px solid var(--border-draft);
+}
+.progress-bar {
+  height: 100%;
+  background: var(--ink);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0%;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--card-bg);
+  border: 2px solid var(--border-draft);
+  border-radius: var(--radius);
+  padding: 36px 28px;
+  box-shadow:
+    4px 4px 0 var(--border-draft),
+    8px 8px 24px rgba(26,22,16,0.08);
+  animation: fadeUp 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--ink) 0, var(--ink) 8px,
+    transparent 8px, transparent 16px
+  );
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* ---------- Landing ---------- */
+.hero-icon {
+  font-size: 56px;
+  text-align: center;
+  margin-bottom: 12px;
+  animation: pulse 3s infinite;
+  filter: grayscale(20%);
+}
+.hero-title {
+  font-family: var(--font-pixel);
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 2px;
+  line-height: 1.8;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+.hero-sub {
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: 3px;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+.hero-features {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.hero-feat {
+  border: 1.5px solid var(--border-draft);
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 12px;
+  color: var(--ink-light);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  background: rgba(255,255,255,0.5);
+}
+.hero-feat span { margin-right: 5px; }
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: 17px 24px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  font-family: var(--font-mono);
+  background: var(--ink);
+  color: var(--paper);
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--ink-light);
+}
+.btn:hover {
+  transform: translate(-2px,-2px);
+  box-shadow: 5px 5px 0 var(--ink-light);
+}
+.btn:active {
+  transform: translate(1px,1px);
+  box-shadow: 1px 1px 0 var(--ink-light);
+}
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn-share {
+  background: var(--accent-rust);
+  border-color: var(--accent-rust);
+  color: #fff;
+  box-shadow: 3px 3px 0 #8B3826;
+}
+.btn-share:hover { box-shadow: 5px 5px 0 #8B3826; }
+
+/* ---------- Question ---------- */
+.question-num {
+  font-size: 11px;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 14px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.question-text {
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 28px;
+  line-height: 1.45;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+}
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option-btn {
+  background: rgba(255,255,255,0.6);
+  border: 2px solid var(--border-draft);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  font-size: 15px;
+  color: var(--ink-light);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  font-family: var(--font-cn);
+  line-height: 1.55;
+  position: relative;
+}
+.option-btn:hover {
+  border-color: var(--ink);
+  background: rgba(255,255,255,0.9);
+  transform: translateX(4px);
+}
+.option-btn.selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 2px 2px 0 var(--ink-light);
+}
+.option-letter {
+  display: inline-block;
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  background: var(--paper-dark);
+  text-align: center;
+  line-height: 26px;
+  font-weight: 800;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  margin-right: 10px;
+  flex-shrink: 0;
+  color: var(--ink-muted);
+  transition: all 0.15s;
+}
+.option-btn:hover .option-letter {
+  background: var(--ink);
+  color: var(--paper);
+}
+.option-btn.selected .option-letter {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* ---------- Loading ---------- */
+.loading-section {
+  text-align: center;
+  padding: 48px 20px;
+}
+.loading-spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--border-draft);
+  border-top-color: var(--ink);
+  border-radius: 0;
+  /* square-ish spinner for hacker vibe */
+  animation: spinSquare 1s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spinSquare { to { transform: rotate(360deg); } }
+.loading-text {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: var(--font-mono);
+}
+.loading-sub {
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+}
+
+/* ---------- Step Dots ---------- */
+.step-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.step-dot {
+  width: 8px; height: 8px;
+  border: 2px solid var(--border-draft);
+  background: transparent;
+  transition: all 0.3s ease;
+  border-radius: 0;
+}
+.step-dot.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  width: 22px;
+  border-radius: 1px;
+}
+.step-dot.done {
+  background: var(--ink-muted);
+  border-color: var(--ink-muted);
+}
+
+/* ---------- Result ---------- */
+.result-wrap { animation: fadeUp 0.6s ease; }
+
+.result-header {
+  text-align: center;
+  padding: 36px 20px 28px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 2px solid var(--border-draft);
+}
+.result-header.blue   { background: linear-gradient(160deg, #2C3E50, #34495E); }
+.result-header.red    { background: linear-gradient(160deg, #6B3328, #8B3E31); }
+.result-header.green  { background: linear-gradient(160deg, #1E4D3E, #2A6B54); }
+.result-header.purple { background: linear-gradient(160deg, #3D2355, #563066); }
+
+.result-type-emoji { font-size: 100px; position: relative; z-index: 1; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
+.result-type-name { font-size: 26px; font-weight: 900; margin: 8px 0 4px; position: relative; z-index: 1; color: #fff; letter-spacing: -0.5px; }
+.result-type-tag { font-size: 11px; opacity: 0.7; position: relative; z-index: 1; letter-spacing: 2px; font-family: var(--font-mono); color: #ddd; }
+
+.result-body {
+  background: var(--card-bg);
+  border: 2px solid var(--border-draft);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 28px;
+}
+
+.result-section { margin-bottom: 24px; }
+.result-section:last-child { margin-bottom: 0; }
+.result-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.result-desc { font-size: 15px; line-height: 1.75; color: var(--ink-light); }
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.result-stat {
+  border: 1.5px solid var(--border-draft);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  text-align: center;
+  background: rgba(255,255,255,0.4);
+}
+.result-stat-label { font-size: 10px; color: var(--ink-muted); margin-bottom: 4px; font-family: var(--font-mono); letter-spacing: 1px; text-transform: uppercase; }
+.result-stat-value { font-size: 14px; font-weight: 800; color: var(--ink); }
+
+/* dimension bars */
+.dim-bars { display: flex; flex-direction: column; gap: 12px; }
+.dim-row { display: flex; align-items: center; gap: 10px; }
+.dim-left, .dim-right {
+  font-size: 11px;
+  width: 82px;
+  flex-shrink: 0;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+}
+.dim-right { text-align: right; }
+.dim-left { text-align: right; }
+.dim-bar-wrap {
+  flex: 1;
+  height: 10px;
+  background: rgba(107,93,74,0.15);
+  border: 1px solid var(--border-draft);
+  border-radius: 0;
+  overflow: hidden;
+  position: relative;
+}
+.dim-bar-fill {
+  height: 100%;
+  border-radius: 0;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dim-bar-fill.blue   { background: #2C3E50; }
+.dim-bar-fill.red    { background: #8B3E31; }
+.dim-bar-fill.green  { background: #2A6B54; }
+.dim-bar-fill.purple { background: #563066; }
+.dim-marker {
+  position: absolute;
+  top: -2px;
+  height: 14px;
+  width: 14px;
+  background: var(--ink);
+  border: 2px solid var(--paper);
+  transform: translateX(-50%);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px var(--border-draft);
+}
+
+/* teammate section */
+.mate-grid { display: flex; flex-direction: column; gap: 8px; }
+.mate-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border-draft);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.3);
+  transition: background 0.15s;
+}
+.mate-item:hover { background: rgba(255,255,255,0.6); }
+.mate-emoji { font-size: 24px; }
+.mate-info { flex: 1; }
+.mate-name { font-weight: 800; font-size: 14px; color: var(--ink); }
+.mate-why { font-size: 12px; color: var(--ink-muted); }
+
+/* share section */
+.share-section {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 2px dashed var(--border-draft);
+}
+.share-code {
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin-bottom: 14px;
+  border: 1.5px solid var(--border-draft);
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 6px;
+  letter-spacing: 2px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  background: rgba(255,255,255,0.4);
+}
+.retake-btn {
+  background: transparent;
+  border: none;
+  color: var(--ink-muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 8px;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-underline-offset: 3px;
+}
+.retake-btn:hover { color: var(--ink); }
+
+/* ---------- Corner marks on card ---------- */
+.corner-mark {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--ink-muted);
+  opacity: 0.4;
+}
+.corner-mark.tl { top: 6px; left: 6px; border-top: 2px solid; border-left: 2px solid; }
+.corner-mark.tr { top: 6px; right: 6px; border-top: 2px solid; border-right: 2px solid; }
+.corner-mark.bl { bottom: 6px; left: 6px; border-bottom: 2px solid; border-left: 2px solid; }
+.corner-mark.br { bottom: 6px; right: 6px; border-bottom: 2px solid; border-right: 2px solid; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 420px) {
+  .container { padding: 14px; }
+  .card { padding: 28px 20px; }
+  .hero-title { font-size: 14px; letter-spacing: 1px; }
+  .question-text { font-size: 18px; }
+  .result-type-name { font-size: 22px; }
+  .result-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- Likert Scale ---------- */
+.likert-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.likert-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 2px solid var(--border-draft);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-cn);
+  text-align: left;
+  width: 100%;
+}
+.likert-btn:hover {
+  border-color: var(--ink);
+  background: rgba(255,255,255,0.9);
+  transform: translateX(4px);
+}
+.likert-btn.selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 2px 2px 0 var(--ink-light);
+}
+.likert-dot {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--paper-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--ink-muted);
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.likert-btn:hover .likert-dot {
+  background: var(--ink);
+  color: var(--paper);
+}
+.likert-btn.selected .likert-dot {
+  background: var(--paper);
+  color: var(--ink);
+}
+.likert-label {
+  font-size: 14px;
+  color: inherit;
+  line-height: 1.4;
+}
+
+/* Dimension strength stars */
+.dim-strength {
+  font-size: 11px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  padding-left: 92px;
+  margin-top: -6px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+/* ---------- Share Card Overlay ---------- */
+#share-card-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+#share-card-overlay.active { display: flex; }
+#share-card {
+  width: 375px;
+  background: #F5F0E8;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+  position: relative;
+}
+#share-card .sc-header {
+  padding: 30px 24px 18px;
+  text-align: center;
+  color: var(--ink);
+}
+#share-card .sc-emoji { font-size: 64px; line-height: 1; }
+#share-card .sc-name {
+  font-size: 28px;
+  font-weight: 900;
+  margin: 12px 0 6px;
+  font-family: var(--font-cn);
+  color: var(--ink);
+}
+#share-card .sc-code {
+  font-size: 13px;
+  font-family: var(--font-mono);
+  color: var(--ink-muted);
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+#share-card .sc-role {
+  font-size: 15px;
+  color: var(--accent-rust);
+  font-weight: 700;
+}
+#share-card .sc-body {
+  padding: 0 24px;
+}
+#share-card .sc-stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+  gap: 8px;
+}
+#share-card .sc-stat {
+  flex: 1;
+  text-align: center;
+  background: rgba(255,255,255,0.5);
+  border-radius: 8px;
+  padding: 12px 6px;
+}
+#share-card .sc-stat-val {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--ink);
+}
+#share-card .sc-stat-lbl {
+  font-size: 10px;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+#share-card .sc-section-title {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--ink-muted);
+  letter-spacing: 2px;
+  text-align: center;
+  margin: 14px 0 8px;
+}
+#share-card .sc-dim-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+#share-card .sc-dim-label {
+  width: 60px;
+  text-align: right;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#share-card .sc-dim-bar-wrap {
+  flex: 1;
+  height: 8px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+#share-card .sc-dim-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s;
+}
+#share-card .sc-dim-bar-fill.blue { background: #3B82C4; }
+#share-card .sc-dim-bar-fill.red { background: #C45A3C; }
+#share-card .sc-dim-bar-fill.green { background: #4A8B6B; }
+#share-card .sc-dim-bar-fill.purple { background: #7B4EA5; }
+#share-card .sc-dim-percent {
+  width: 60px;
+  text-align: left;
+  font-weight: 700;
+}
+#share-card .sc-footer {
+  text-align: center;
+  padding: 18px 24px 22px;
+  background: rgba(0,0,0,0.03);
+  margin-top: 14px;
+}
+#share-card .sc-footer-title {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--ink-muted);
+  letter-spacing: 3px;
+}
+#share-card .sc-footer-url {
+  font-size: 10px;
+  color: var(--ink-muted);
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  opacity: 0.6;
+}
+#share-card-overlay .sc-btns {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+}
+#share-card-overlay .sc-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-cn);
+}
+#share-card-overlay .sc-btn-download {
+  background: var(--accent-rust);
+  color: white;
+}
+#share-card-overlay .sc-btn-close {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  backdrop-filter: blur(4px);
+}
+
+</style>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+<body>
+
+<div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+
+<div class="container" id="app"></div>
+
+<script>
+// ======================== QUESTION BANK (96 forced-choice + 8 Likert) ========================
+
+const questionBank = {
+  "R": {
+    labels: { dimName: "R维度 · 实现路径", pos: "B(物理派 Builder)", neg: "M(数字派 Modeler)", posShort: "B(物理派)", negShort: "M(数字派)" },
+    scenes: [
+      { name: "产品/项目启动", questions: [
+        { text: "当负责一个全新产品上线，你的第一反应是？", a: "快速做一个最简单的可用版本，推到一小部分真实用户手中测试反馈", b: "先做详细的市场调研、竞品分析和用户画像，形成完整方案再开发" },
+        { text: "团队在讨论如何实现一个新功能，你更可能？", a: "别讨论了，先搭个面包板试一下，行就继续", b: "等一下，我画一下流程图和数据结构，确认逻辑跑通再动手" },
+        { text: "公司决定开发一款内部工具，你的建议是？", a: "先用Excel或低代码平台搭一个能用版本，让大家先用起来再迭代", b: "先梳理所有需求文档，设计好数据库架构和权限体系再开发" },
+        { text: "你接到一个从零开始的项目，通常第一步是？", a: "直接开始编码或搭建原型，在做的过程中明确方向", b: "先阅读相关文档和参考资料，制定详细计划再执行" },
+      ]},
+      { name: "市场营销与用户验证", questions: [
+        { text: "你需要制定一场营销活动方案，你的做法是？", a: "先选一个小范围渠道做测试投放，根据数据快速调整策略", b: "先建立完整的用户漏斗模型，模拟不同渠道的ROI再决定预算分配" },
+        { text: "面对一个全新的社交媒体平台，你怎么入手？", a: "先注册账号，发几条不同类型的内容试试水，观察反响", b: "先研究平台的算法规则、成功案例和受众特征，制定内容策略再发布" },
+        { text: "公司品牌面临定位调整，你倾向于？", a: "先做几版不同风格的宣传物料在小范围AB测试，看用户反应", b: "先委托第三方做全面的品牌健康度调研，数据分析后再确定方向" },
+        { text: "你想验证一个产品创意是否有市场，你会？", a: "做一个简单的落地页或demo，投放广告看点击率", b: "设计一份详细的用户调研问卷，回收样本量做统计分析" },
+      ]},
+      { name: "客户服务与问题诊断", questions: [
+        { text: "用户投诉一个紧急问题，你的第一反应是？", a: "直接联系用户，远程或现场排查问题，先让用户能用起来", b: "先让用户提供日志、截图、复现步骤，定位根因后再出修复方案" },
+        { text: "你需要深入了解用户的使用习惯，你会？", a: "直接去用户现场或约用户面对面交流，观察他们操作全过程", b: "设计一份结构化的问卷，配合后台行为数据做大规模分析" },
+        { text: "产品上线后数据不及预期，你的下一步是？", a: "立刻约几个核心用户做访谈，找到他们卡住的点并快速修改", b: "先搭建完整的数据看板，分析每一步转化漏斗的流失原因" },
+        { text: "系统在生产环境出现偶发性故障，你通常？", a: "先重启服务或回滚版本，让业务恢复再找根因", b: "保留现场，收集dump和日志，分析清楚后再修复" },
+      ]},
+      { name: "团队管理与协作", questions: [
+        { text: "你刚接手一个新团队，首要行动是？", a: "和每个成员一对一聊天，了解他们的工作方式和痛点", b: "先梳理团队的职责分工、项目流程和现有文档，建立全局视图" },
+        { text: "团队内部出现严重分歧，你会？", a: "把所有人拉到会议室，现场辩论并尝试一个折中方案，先跑起来", b: "分别与核心成员单独沟通，整理各方观点后给出一个逻辑建议" },
+        { text: "你需要为团队引入一套新工具/新流程，你选择？", a: "选一个简单工具先让团队用起来，遇到问题再逐步升级", b: "先对比几款工具的功能和适用场景，制定迁移计划再推行" },
+        { text: "有新同事加入，你倾向于如何让他上手？", a: "直接分配一个小任务，让他在实践中学习，有问题随时问", b: "先整理一份详细的新手文档，带他过一遍整体架构和流程" },
+      ]},
+      { name: "个人工作习惯与学习", questions: [
+        { text: "面对一个从未接触过的复杂任务，你倾向于？", a: "先动手做一点试试，遇到障碍再查资料、调整方向", b: "先花时间搜集资料、学习理论、制定详细计划再正式开始" },
+        { text: "学习一项新技能（如剪辑、编程、设计），你的方式是？", a: "打开软件直接上手操作，需要什么功能再现学现用", b: "先看完一本入门教程或系统课程，理解底层逻辑再实践" },
+        { text: "写一份重要的工作报告，你通常？", a: "直接开写，想到哪写到哪，写完后整体调整结构和措辞", b: "先列详细大纲，收集齐所有数据和参考资料再逐节填充" },
+        { text: "你的工作桌面/数字文件通常是？", a: "东西随手放，但自己知道在哪；定期一次性大整理", b: "有固定的分类体系和命名规则，随时保持整齐有序" },
+      ]},
+      { name: "生活决策与日常", questions: [
+        { text: "计划一次长途旅行，你倾向于？", a: "订好机票和第一晚住宿，到了当地再探索路线和玩法", b: "做详细的攻略，排好每天的行程、交通、备选方案，预订好所有住宿" },
+        { text: "搬家后整理新房间，你的方法是？", a: "把所有物品先拿出来，按使用频率随手摆放，之后再调整", b: "先测量空间尺寸，规划每个区域的收纳方案再动手拆包" },
+        { text: "购买一件贵重物品（如手机、家电），你通常？", a: "去实体店亲手体验一下，感觉不错就下单", b: "花几天时间看评测、比参数、查历史价格，确定最优选择再买" },
+        { text: "朋友找你合伙做一个新项目，你的第一反应是？", a: "先花一个周末搭出demo，看看市场有没有反应再说", b: "先一起做商业计划书，算清楚成本、风险和盈利模式再启动" },
+      ]},
+    ],
+    likert: [
+      { text: "在开始一个新项目时，我倾向于先动手做出一个能跑的版本，而不是花大量时间做前期规划。", type: "positive" },
+      { text: "我认为在动手之前，先在系统里跑通仿真、模型或详细推演是必不可少的步骤。", type: "negative" },
+    ]
+  },
+  "Z": {
+    labels: { dimName: "Z维度 · 注意力焦点", pos: "A(宏观派 Architect)", neg: "C(微观派 Craftsman)", posShort: "A(宏观派)", negShort: "C(微观派)" },
+    scenes: [
+      { name: "产品/项目启动", questions: [
+        { text: "当开始设计一款新产品时，你的第一反应是？", a: "先画出整体架构图，定义模块边界和接口协议", b: "先研究核心模块的具体实现方案，确认技术可行性" },
+        { text: "团队拿到一份模糊的用户需求文档，你会如何推进？", a: "先梳理需求的层次结构，确定哪些是必须实现的核心功能，哪些可以后续迭代", b: "先逐条分析每个需求的具体含义，拆解出可量化的验收标准" },
+        { text: "在制定项目计划时，你更关注什么？", a: "项目的时间节点、资源分配和各个阶段的目标对齐", b: "每个任务的具体负责人、完成标准和潜在风险点" },
+        { text: "你接到一个从零开始的新任务，你通常会？", a: "先花时间理解任务在整体业务中的定位，再定义子任务和目标", b: "直接上手做，边做边调整，快速产出阶段性成果" },
+      ]},
+      { name: "质量与执行", questions: [
+        { text: "当审查队友提交的代码或设计方案时，你优先检查什么？", a: "整体架构是否合理，接口设计是否清晰，是否遵循了设计原则", b: "每一行代码/每一个尺寸是否正确，边界条件和异常处理是否覆盖" },
+        { text: "项目后期发现一个潜在缺陷，你的处理方式是？", a: "先评估这个缺陷对整体系统的影响范围，再决定修复优先级", b: "立刻深入排查缺陷的具体原因，找到根本问题并修复" },
+        { text: "团队在赶工期，你发现某个模块的质量不达标，你会？", a: "重新审视整体计划，判断是否可以调整其他模块的时间来保证核心质量", b: "亲自帮助队友打磨该模块的细节，直到符合标准" },
+        { text: "你写的一份文档被退回修改，你通常？", a: "先理解修改意见背后的逻辑，调整文档的整体结构和论述框架", b: "逐字逐句按照修改意见修改，确保每个标点都准确无误" },
+      ]},
+      { name: "沟通与协作", questions: [
+        { text: "向领导汇报项目进展时，你倾向于？", a: "先讲项目的整体进度、关键里程碑和下一步计划", b: "先讲具体的数据、技术细节和遇到的问题及解决过程" },
+        { text: "指导新同事入门，你会从什么开始？", a: "先介绍整体系统架构和业务逻辑，让他建立全局认知", b: "先带他过一遍核心代码或具体操作流程，让他能立刻上手" },
+        { text: "团队成员之间因接口定义产生分歧，你的做法是？", a: "回到整体架构层面，重新审视接口设计的合理性，从系统角度给出建议", b: "深入了解双方的具体实现细节，找出不兼容的地方并协调修改" },
+        { text: "你向别人解释一个复杂概念时，更倾向？", a: "用比喻或类比勾勒整体图景，帮助对方建立框架性理解", b: "用具体例子逐步拆解，从细节推到整体结论" },
+      ]},
+      { name: "管理与领导力", questions: [
+        { text: "作为项目负责人，你如何确保团队方向一致？", a: "定期更新路线图和总体目标，强调各模块之间的依赖关系", b: "建立详细的任务清单和检查表，跟进每个任务的完成情况" },
+        { text: "团队成员抱怨工作太琐碎，你会怎么回应？", a: "帮他梳理这些琐碎工作在整体项目中的意义，让他看到价值", b: "和他一起优化工作流程，把重复性工作自动化或简化" },
+        { text: "你被要求评估一个新机会（如新产品线），你首先考虑的是？", a: "这个机会在行业格局中的位置，是否与公司长期战略契合", b: "这个机会需要的具体资源、技术难度和短期落地路径" },
+        { text: "当你需要做出一项重要决策时，你通常会？", a: "列出所有选项的利弊，从宏观角度选择最优方案", b: "深入分析每个选项的细节，直到确信自己掌握了全部信息" },
+      ]},
+      { name: "个人工作习惯", questions: [
+        { text: "你每天的排期方式是？", a: "先确定当天最重要的三件事，再安排具体时间块", b: "把当天所有任务列成清单，按优先级逐项完成" },
+        { text: "你学习一项新工具或新框架时，通常？", a: "先阅读官方文档的概览，理解它的设计哲学和适用场景", b: "直接上手做一个小项目，遇到不懂的功能再查具体文档" },
+        { text: "你的办公桌/工作文件夹通常是？", a: "按项目或主题分大类，每类里面东西相对随意，找东西靠记忆", b: "有严格的分类层级，每个文件有固定命名规范，找东西靠索引" },
+        { text: "你写工作报告或邮件时，通常？", a: "先搭好整体结构（引言-正文-结论），再填充具体内容", b: "直接开始写，写完后再整体调整结构和措辞" },
+      ]},
+      { name: "生活与综合", questions: [
+        { text: "计划一次旅行，你更倾向于？", a: "确定目的地和大致天数，留出自由探索的空间", b: "制定详细的每日行程、交通和住宿安排" },
+        { text: "你读一本书（非小说类）时，通常？", a: "先看目录和前言，把握全书框架，再选择重点章节精读", b: "从第一页开始逐章阅读，不漏掉任何细节" },
+        { text: "你家里要添置一件新家具（如书架），你会？", a: "先测量房间尺寸，考虑整体风格和布局，再选择款式", b: "先研究不同材质的优缺点、承重能力、价格，再比较挑选" },
+        { text: "朋友请你帮他分析一个困扰他的问题，你通常会？", a: "先了解问题的背景和整体情况，帮他梳理出关键矛盾", b: "先追问具体细节，帮他找到问题产生的最直接原因" },
+      ]},
+    ],
+    likert: [
+      { text: "在做任何项目时，我倾向于先拉通整体架构和系统边界，而不是先深入具体细节。", type: "positive" },
+      { text: "我认为只有在具体细节上做到极致，才能确保项目的质量和可靠性。", type: "negative" },
+    ]
+  },
+  "T": {
+    labels: { dimName: "T维度 · 工作模式", pos: "O(团队派 Organizer)", neg: "S(独行派 Soloist)", posShort: "O(团队派)", negShort: "S(独行派)" },
+    scenes: [
+      { name: "项目启动与任务分配", questions: [
+        { text: "接到一个新项目，你的第一反应是？", a: "先召集相关人开启动会，明确分工和协作机制", b: "先自己把核心框架搭起来，再分配给其他人跟进" },
+        { text: "团队遇到一个从未做过的新功能，你会？", a: "组织头脑风暴，让每个人都贡献想法，形成集体方案", b: "自己先研究一番，拿出一个初步方案再让大家提意见" },
+        { text: "在分配任务时，你更倾向于？", a: "根据每个人的特长和意愿来分配，确保分工合理", b: "把最核心的部分留给自己做，其他部分再分出去" },
+        { text: "项目时间紧迫，需要快速出成果，你会？", a: "把任务拆解成小块，同步分配给多人并行推进", b: "自己集中精力攻克最关键的部分，其他交给别人" },
+      ]},
+      { name: "问题解决与决策", questions: [
+        { text: "当遇到一个复杂的技术难题，你通常？", a: "拉上相关方向的同事一起讨论，集思广益找方案", b: "自己一个人深入研究，直到找到解决方案再分享" },
+        { text: "你需要做一项重要决策，但信息不充分，你会？", a: "主动找各方专家和利益相关者收集意见，再综合判断", b: "基于自己掌握的信息独立判断，必要时再补充调研" },
+        { text: "在调试一个棘手的Bug时，你更倾向？", a: "和队友一起围在屏幕前，边走查边讨论", b: "自己安静地分析日志和代码，不希望被打断" },
+        { text: "团队对技术方案有分歧，你倾向如何处理？", a: "组织正式讨论，让大家充分表达，最后投票或共识决策", b: "自己分析各方方案的优劣，拿出一个你认为最优的方案说服大家" },
+      ]},
+      { name: "沟通与协作习惯", questions: [
+        { text: "在工作中，你更喜欢？", a: "频繁的和同事沟通进度、交换想法、互相 review", b: "有明确目标后专注工作，只在必要时才沟通" },
+        { text: "你如何描述自己的工作风格？", a: "我喜欢和大家一起干，群策群力", b: "我喜欢自己先搞清楚，再和别人对接" },
+        { text: "当你需要学习一项新技术时，你通常？", a: "找几个志同道合的同事组成学习小组，一起讨论进步", b: "自己找资料、动手做项目，遇到问题再搜索或请教" },
+        { text: "在会议中，你通常扮演什么角色？", a: "主动引导讨论，鼓励每个人发言，推动形成结论", b: "更多是倾听和思考，在自己有把握时才发言" },
+      ]},
+      { name: "压力与紧急情况", questions: [
+        { text: "项目到了最后冲刺阶段，任务还很多，你会？", a: "重新协调资源，让大家互相支援，确保整体进度", b: "主动承担更多任务，自己加班加点把缺口补上" },
+        { text: "你负责的模块出了严重问题，可能导致延期，你的第一反应是？", a: "立即同步团队成员，一起评估影响并制定应对方案", b: "先自己全力修复，实在搞不定再升级求助" },
+        { text: "当团队士气低落时，你会？", a: "主动组织团建或一对一沟通，提振团队氛围", b: "以身作则，用高质量的工作成果带动大家" },
+        { text: "你被安排到一个新团队，你会先？", a: "花时间了解和熟悉每个成员，建立信任关系", b: "先熟悉手头的任务和技术细节，再逐步认识人" },
+      ]},
+      { name: "个人偏好与工作习惯", questions: [
+        { text: "你认为高效率的工作方式是？", a: "多人协作，各自负责擅长的部分，同步推进", b: "独立负责完整的一条线，减少沟通成本" },
+        { text: "你对ownership的理解是？", a: "作为团队一员，共同对结果负责", b: "对自己负责的模块全权负责，不接受他人掣肘" },
+        { text: "你更享受哪种工作状态？", a: "和团队一起热火朝天地讨论、迭代、推进", b: "独自沉浸在代码或设计中，进入心流状态" },
+        { text: "你在写代码或做设计时，习惯？", a: "边写边和同事确认思路，保持对齐", b: "先完整写出初稿，再一次性给别人 review" },
+      ]},
+      { name: "生活与校园场景", questions: [
+        { text: "在准备一次重要的考试或比赛时，你更倾向？", a: "组织学习小组，互相讲解、互相出题", b: "自己制定计划，独自复习，不受打扰" },
+        { text: "你和朋友一起策划一次旅行，你通常？", a: "主动分工，有人订票、有人查攻略、有人订住宿", b: "自己把整个行程规划好，再给大家看" },
+        { text: "在社团活动中，你更倾向于？", a: "担任组织者，协调各方资源，推动活动落地", b: "负责具体执行任务，高质量完成自己那一块" },
+        { text: "当你在做一件需要创造力的事情（如写文章、做设计）时，你更喜欢？", a: "和朋友一起 brainstorm，碰撞出灵感", b: "自己安静地构思，深度打磨后再给别人看" },
+      ]},
+    ],
+    likert: [
+      { text: "在工作和学习中，我更喜欢和别人一起合作完成任务，而不是独自完成。", type: "positive" },
+      { text: "我认为一个人独立工作比团队协作更高效，因为减少了沟通成本。", type: "negative" },
+    ]
+  },
+  "I": {
+    labels: { dimName: "I维度 · 终极目标", pos: "F(务实派 Fixer)", neg: "P(完美派 Perfectionist)", posShort: "F(务实派)", negShort: "P(完美派)" },
+    scenes: [
+      { name: "产品定义与需求取舍", questions: [
+        { text: "你要为一款新产品选择核心功能，你的首要标准是？", a: "这个功能是否解决了用户的真实痛点，能否带来实际价值", b: "这个功能是否足够创新和技术领先，能否成为产品的标杆" },
+        { text: "用户反馈一个需求，但实现起来非常复杂，你会？", a: "评估这个需求的普遍性和紧迫性，如果足够重要，即使复杂也值得做", b: "如果这个需求会影响产品的整体体验一致性，宁可放弃也不仓促上线" },
+        { text: "产品上线后数据表现平庸，你第一反应是？", a: "快速调整功能方向，寻找更贴合市场的切入点", b: "深入分析产品体验的每一个细节，找到可以打磨提升的地方" },
+        { text: "在定义产品路线图时，你更倾向于？", a: "优先做那些能最快验证市场假设、获取用户反馈的功能", b: "优先做那些能建立技术壁垒、体现产品核心理念的功能" },
+      ]},
+      { name: "质量标准与交付决策", questions: [
+        { text: "产品到了交付节点，但还有一些小问题没解决好，你会？", a: "先交付核心可用的版本，后续通过更新迭代完善", b: "延迟交付，直到问题全部解决，确保用户拿到的是无瑕疵的产品" },
+        { text: "团队在讨论什么是完成，你的观点是？", a: "完成意味着用户的核心需求得到了满足，可以正常使用", b: "完成意味着产品达到了我们设定的内部质量标准，无可挑剔" },
+        { text: "你设计的方案被用户吐槽不好用，你会？", a: "立刻收集用户的具体反馈，快速迭代改进方案", b: "反思自己的设计逻辑，重新思考用户的真实使用场景再做调整" },
+        { text: "在资源有限的情况下，你会如何分配精力？", a: "确保核心流程跑通，优先保证用户能完成关键任务", b: "即便核心流程跑通了，如果用户体验不够流畅，也会继续打磨" },
+      ]},
+      { name: "绩效与成就感来源", questions: [
+        { text: "当项目结束后，你最大的成就感来源于？", a: "产品被大量用户使用，切实解决了他们的实际问题", b: "产品在技术或体验上达到了一个新的高度，获得了同行的认可" },
+        { text: "你在工作中最在意的是？", a: "我做的东西是否对社会或他人有用", b: "我做的东西是否达到了我自己内心的标准" },
+        { text: "你认为一个好的产品经理最重要的能力是？", a: "洞察用户需求，找到市场与产品的契合点", b: "把控产品品质，确保每一个细节都经得起推敲" },
+        { text: "你如何定义成功的产品？", a: "成功是让用户满意，解决他们的实际问题，获得市场认可", b: "成功是让团队成员自豪，实现了技术或体验的突破" },
+      ]},
+      { name: "团队协作与价值观冲突", questions: [
+        { text: "团队在讨论是否要为了赶工期牺牲部分质量，你的立场是？", a: "在可接受的范围内适当妥协，保证项目按时交付并快速获取反馈", b: "质量是底线，不能妥协，宁可加班也要保证标准不降低" },
+        { text: "一位队友认为够用就行，但你认为还有提升空间，你会？", a: "尊重他的意见，但会提出数据或用户反馈来论证进一步优化的价值", b: "坚持自己的标准，认为产品既然做了就应该做到最好，不能敷衍" },
+        { text: "当用户满意度调查数据显示还行，但内部评估认为不够好时，你更倾向于相信？", a: "用户数据，因为最终买单的是用户", b: "内部评估，因为用户不一定能表达出他们真正的潜在需求" },
+        { text: "合伙人提出一个看起来很酷但市场需求不明的功能，你的态度是？", a: "先做用户调研验证需求，用数据判断是否值得做", b: "如果这个功能在技术上能体现团队实力，可以作为技术储备先做出来" },
+      ]},
+      { name: "个人工作习惯与信念", questions: [
+        { text: "你在写代码或做设计时，更注重？", a: "代码/设计是否能正确解决问题，满足功能需求", b: "代码/设计是否优雅、可扩展、符合最佳实践" },
+        { text: "当你提交的工作成果被要求修改时，你通常？", a: "理解修改目的，快速调整以达成目标", b: "先确认修改建议是否合理，如果认为自己的方案更好会坚持" },
+        { text: "你如何看待80%的完成度这个概念？", a: "80%已经可以推向市场获取反馈，剩下的20%可以在迭代中完善", b: "80%只是一个半成品，如果不能达到95%以上，不应该被用户看到" },
+        { text: "你在选择加入一个创业项目时，最看重的是？", a: "这个项目解决的社会问题有多大，市场前景如何", b: "这个项目的技术挑战和愿景是否足够吸引你，能否做出令人骄傲的产品" },
+      ]},
+      { name: "综合价值观与生活决策", questions: [
+        { text: "你如何看待商业成功和产品极致之间的关系？", a: "商业成功是产品能够持续服务用户的基础，应当优先保障", b: "产品极致是商业成功的基石，没有极致的产品难以长久成功" },
+        { text: "如果你中了一笔足以退休的彩票，你还会继续做当前的工作吗？", a: "会，但可能会转向更能直接帮助他人的项目或公益事业", b: "会，但可能会选择自己感兴趣的技术课题深入研究，追求极致" },
+        { text: "在你看来，一个理想的科技产品应该？", a: "让更多人以更低成本享受科技带来的便利，缩小数字鸿沟", b: "代表人类科技的最高水平，推动行业边界向前拓展" },
+        { text: "当你回顾自己职业生涯时，你希望被如何记住？", a: "我是一个创造了价值、解决了问题的人", b: "我是一个做出了卓越产品、定义了行业标准的人" },
+      ]},
+    ],
+    likert: [
+      { text: "在做产品决策时，我始终以用户需求和社会价值为首要考量，而不是追求技术或体验的极致。", type: "positive" },
+      { text: "我认为一个产品如果不能达到我内心的标准，就不应该被发布，无论用户是否觉得够用了。", type: "negative" },
+    ]
+  },
+};
+
+// ======================== QUESTION SELECTION ========================
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function selectQuestions() {
+  let forcedChoice = [];
+  const dims = ["R", "Z", "T", "I"];
+  dims.forEach(dim => {
+    const bank = questionBank[dim];
+    bank.scenes.forEach(scene => {
+      const q = scene.questions[Math.floor(Math.random() * scene.questions.length)];
+      forcedChoice.push({
+        ...q,
+        dim: dim,
+        dimLabel: bank.labels,
+        scene: scene.name,
+      });
+    });
+  });
+  // Shuffle forced-choice
+  forcedChoice = shuffle(forcedChoice);
+  // Number them
+  forcedChoice.forEach((q, i) => { q.id = i + 1; });
+  
+  // Build Likert questions in RZTI order
+  let likertQs = [];
+  dims.forEach(dim => {
+    const bank = questionBank[dim];
+    bank.likert.forEach((lq, li) => {
+      likertQs.push({
+        ...lq,
+        dim: dim,
+        dimLabel: bank.labels,
+        isLikert: true,
+        isNegative: lq.type === "negative",
+        id: forcedChoice.length + li + 1 + (dims.indexOf(dim) * 2),
+      });
+    });
+  });
+  // Re-number likert consecutively
+  likertQs.forEach((q, i) => { q.id = forcedChoice.length + i + 1; });
+  
+  return { forcedChoice, likert: likertQs };
+}
+
+let selectedQuestions = null; // { forcedChoice, likert }
+let allQuestions = null; // forcedChoice.concat(likert)
+let currentPhase = null; // "forced" | "likert"
+
+function getCurrentQuestion() {
+  return allQuestions[state.currentQ];
+}
+function getTotalQuestions() {
+  return allQuestions.length;
+}
+
+
+// ======================== TYPE DATA (16 personalities) ========================
+
+const typeMap = {
+  'BASF': { name: '闪电原型师', emoji: '⚡', family: 'blue', tag: 'Builder × Architect × Soloist × Fixer', tagZh: 'B(物理派 Builder) × A(宏观派 Architect) × S(独行派 Soloist) × F(务实派 Fixer)',
+    desc: '你是那种48小时内能出原型的人。不需要完美，只需要先做出来给别人看。对你来说，行动就是最好的思考方式，而每一次快速迭代都是一次精准的市场侦察。',
+    role: '快速验证者', pain: '总是被说"不够深入"', solution: '48小时限制反而适合你，配合一个堡垒工程师帮你收尾。',
+    rarity: 9 },
+  'BCSF': { name: '狂热制造者', emoji: '🔨', family: 'blue', tag: 'Builder × Craftsman × Soloist × Fixer', tagZh: 'B(物理派 Builder) × C(微观派 Craftsman) × S(独行派 Soloist) × F(务实派 Fixer)',
+    desc: '让你焊就行。你享受亲手把材料变成实物的过程，每一个零件的组合都让你兴奋。你不需要太多理论，手感和经验就是你的导航系统。',
+    role: '硬核Maker', pain: '能造，但缺一张系统蓝图', solution: '给你配个架构师队友，你们的组合能在48小时里造出怪物。',
+    rarity: 10 },
+  'MASF': { name: '星际建筑师', emoji: '🌌', family: 'blue', tag: 'Modeler × Architect × Soloist × Fixer', tagZh: 'M(数字派 Modeler) × A(宏观派 Architect) × S(独行派 Soloist) × F(务实派 Fixer)',
+    desc: '你在脑子里已经把所有东西造完了。你习惯先构建完整的思维模型，推演每一个边界条件，确认逻辑无懈可击之后才动手。别人以为你在发呆，其实你在编译整个宇宙。',
+    role: '架构师/技术Lead', pain: 'Idea太多落地太少', solution: '给你灵巧手+算力逼你动手，找一个闪电原型师做你的执行层。',
+    rarity: 8 },
+  'MCSF': { name: '梦想工程师', emoji: '🛸', family: 'blue', tag: 'Modeler × Craftsman × Soloist × Fixer', tagZh: 'M(数字派 Modeler) × C(微观派 Craftsman) × S(独行派 Soloist) × F(务实派 Fixer)',
+    desc: '你相信这个世界上不该没有某个东西。你的驱动力不是市场，不是技术，而是"这东西必须存在"的执念。你的愿景可能超前五年，但那些懂你的人会奋不顾身跟你干。',
+    role: '愿景型产品', pain: '不被理解/太超前', solution: '1600+产业精英里总有人懂你，找一个信号解码器帮你翻译给世界。',
+    rarity: 8 },
+  'MAOP': { name: '堡垒工程师', emoji: '🏗️', family: 'red', tag: 'Modeler × Architect × Organizer × Perfectionist', tagZh: 'M(数字派 Modeler) × A(宏观派 Architect) × O(团队派 Organizer) × P(完美派 Perfectionist)',
+    desc: '它不会坏，因为你已经考虑了所有情况。你的系统架构像一座堡垒——每个模块都有冗余，每个接口都有边界检查，每个失败模式都有应对方案。团队在你身后永远安全。',
+    role: '可靠性担当', pain: '被人说"太慢了"', solution: '48小时是逼你做MVP不是完美品。配合一个闪电原型师帮你加速。',
+    rarity: 3 },
+  'MCOP': { name: '数据猎手', emoji: '🔬', family: 'red', tag: 'Modeler × Craftsman × Organizer × Perfectionist', tagZh: 'M(数字派 Modeler) × C(微观派 Craftsman) × O(团队派 Organizer) × P(完美派 Perfectionist)',
+    desc: '给你证据，不要给你感觉。你相信数据不会骗人，每一个决策都必须有可追溯的逻辑链。你可以花三小时调试一个偶发bug，因为你不能容忍任何不确定性。',
+    role: '调试专家/QA', pain: '团队嫌你啰嗦', solution: '但你的队友会在Demo崩溃的前一秒感谢你救了他们。',
+    rarity: 5 },
+  'BCOP': { name: '工匠大师', emoji: '⚙️', family: 'red', tag: 'Builder × Craftsman × Organizer × Perfectionist', tagZh: 'B(物理派 Builder) × C(微观派 Craftsman) × O(团队派 Organizer) × P(完美派 Perfectionist)',
+    desc: '差0.5mm也是不合格。你对精确的追求到了偏执的程度——但这正是为什么经你手的作品永远比别人的优雅一个数量级。你不是慢，你是在等作品自己完整。',
+    role: '精密制造者', pain: '完美主义导致进度慢', solution: '配合一个快速原型队友，你们可以一人做深度一人做广度。',
+    rarity: 5 },
+  'BAOP': { name: '守护者', emoji: '🛡️', family: 'red', tag: 'Builder × Architect × Organizer × Perfectionist', tagZh: 'B(物理派 Builder) × A(宏观派 Architect) × O(团队派 Organizer) × P(完美派 Perfectionist)',
+    desc: '你先确保不会炸。你天生就有风险嗅觉——在所有人兴奋的时候，你已经看到了三个潜在隐患。你不是扫兴，你是让兴奋能够持续到最后的人。',
+    role: '安全/稳定担当', pain: '不够"性感"', solution: '但每个冠军团队都需要你。找混沌工程师做你的破局搭档。',
+    rarity: 6 },
+  'BAOF': { name: '万能胶水', emoji: '🤝', family: 'green', tag: 'Builder × Architect × Organizer × Fixer', tagZh: 'B(物理派 Builder) × A(宏观派 Architect) × O(团队派 Organizer) × F(务实派 Fixer)',
+    desc: '你们俩别吵了，我来翻译。你不是最懂技术的，也不是最有创意的，但你是那个让所有零件严丝合缝的人。你最大的超能力是让互相听不懂的人开始合作。',
+    role: '团队粘合剂', pain: '自己好像什么都不会', solution: '你最大的技能就是让人合作。没有你，天才们只会互相掐架。',
+    rarity: 12 },
+  'MAOF': { name: '信号解码器', emoji: '📡', family: 'green', tag: 'Modeler × Architect × Organizer × Fixer', tagZh: 'M(数字派 Modeler) × A(宏观派 Architect) × O(团队派 Organizer) × F(务实派 Fixer)',
+    desc: '他说的是这个意思。你能听懂疯子的想法，也能翻译给凡人听。你在不同语言、不同领域、不同思维方式之间架桥，让天才的想法不至于死在沟通环节。',
+    role: '技术翻译官', pain: '夹在中间两头受气', solution: '但没有你团队早就散了。你连接了所有本该断裂的节点。',
+    rarity: 6 },
+  'BCOF': { name: '拼装魔术师', emoji: '🧩', family: 'green', tag: 'Builder × Craftsman × Organizer × Fixer', tagZh: 'B(物理派 Builder) × C(微观派 Craftsman) × O(团队派 Organizer) × F(务实派 Fixer)',
+    desc: '这个库+那个板+这段代码=搞定。你擅长把别人眼中的半成品拼成一个完整的东西。你的创新不在于从零开始，而在于看到不同模块之间别人看不到的连接方式。',
+    role: '方案整合者', pain: '觉得自己不够原创', solution: '整合就是最高级的创新，iPhone不是发明了触摸屏而是把已有的东西拼对了。',
+    rarity: 10 },
+  'MCOF': { name: '迭代引擎', emoji: '🔄', family: 'green', tag: 'Modeler × Craftsman × Organizer × Fixer', tagZh: 'M(数字派 Modeler) × C(微观派 Craftsman) × O(团队派 Organizer) × F(务实派 Fixer)',
+    desc: 'V1.0烂？那就做V2.0。你相信任何一个伟大的产品都是从一堆垃圾版本里长出来的。你不怕发布半成品，因为你已经把"持续改进"写进了你的操作系统的底层。',
+    role: '持续改进者', pain: '永远在改版从不发布', solution: '48小时强制发布节点就是为你设计的。在那之后你还有的是时间迭代。',
+    rarity: 12 },
+  'MASP': { name: '规则重写者', emoji: '💣', family: 'purple', tag: 'Modeler × Architect × Soloist × Perfectionist', tagZh: 'M(数字派 Modeler) × A(宏观派 Architect) × S(独行派 Soloist) × P(完美派 Perfectionist)',
+    desc: '谁说一定要这样做的？你的大脑不按任何教科书运转。当所有人沿着同一条路狂奔时，你停下来看了看地图，然后问了一个让全场沉默的问题。你不是杠精，你是真的看到了不同的可能性。',
+    role: '颠覆性创新者', pain: '常被评委说"不切实际"', solution: '我们专门设了"最颠覆"奖。找一个守护者帮你把疯狂想法落地。',
+    rarity: 2 },
+  'BASP': { name: '盲点狙击手', emoji: '🎯', family: 'purple', tag: 'Builder × Architect × Soloist × Perfectionist', tagZh: 'B(物理派 Builder) × A(宏观派 Architect) × S(独行派 Soloist) × P(完美派 Perfectionist)',
+    desc: '所有人都忽略了这个。你有一种诡异的直觉，总能在别人认为"没问题"的地方发现致命漏洞。你的价值在于看到了群体思维的盲区，然后一击命中。',
+    role: '差异化竞争者', pain: '太小众找不到队友', solution: '200个极客总有一个懂你。找一个迭代引擎做你的搭档。',
+    rarity: 2 },
+  'BCSP': { name: '混沌工程师', emoji: '🌀', family: 'purple', tag: 'Builder × Craftsman × Soloist × Perfectionist', tagZh: 'B(物理派 Builder) × C(微观派 Craftsman) × S(独行派 Soloist) × P(完美派 Perfectionist)',
+    desc: '让它崩溃，我来看看会怎样。你不怕系统崩溃——你甚至主动制造崩溃，因为你知道只有在极端的边界条件下才能看清系统的本质。别人觉得你在搞破坏，其实你在做最深刻的调试。',
+    role: '压力测试者', pain: '别人觉得你在搞破坏', solution: '你找到的Bug别人永远找不到。找一个堡垒工程师做你的平衡器。',
+    rarity: 1 },
+  'MCSP': { name: '通配符', emoji: '🃏', family: 'purple', tag: 'Modeler × Craftsman × Soloist × Perfectionist', tagZh: 'M(数字派 Modeler) × C(微观派 Craftsman) × S(独行派 Soloist) × P(完美派 Perfectionist)',
+    desc: '不好定义，但我很有用。你不属于任何既有的分类——而且你为此感到骄傲。你可能在边缘地带游走，但正是这些边缘地带常常酝酿着最大的突破。你不是怪人，你是那个不受任何轨道约束的自由电子。',
+    role: '自由电子', pain: '不知道自己能干嘛', solution: '来了就知道了。所有的框架都只是脚手架，你的价值远在任何标签之上。',
+    rarity: 1 }
+};
+
+const mateMap = {
+  'BASF': [{ name: '堡垒工程师', emoji: '🏗️', why: '帮你把快速原型变成坚固系统' }, { name: '工匠大师', emoji: '⚙️', why: '给你的原型加上细节的质感' }],
+  'BCSF': [{ name: '星际建筑师', emoji: '🌌', why: '帮你搭建架构，让你的制造有方向' }, { name: '信号解码器', emoji: '📡', why: '帮你把作品讲给别人听' }],
+  'MASF': [{ name: '闪电原型师', emoji: '⚡', why: '帮你把脑中的模型变成实物' }, { name: '狂热制造者', emoji: '🔨', why: '给你一双可以执行的手' }],
+  'MCSF': [{ name: '信号解码器', emoji: '📡', why: '帮你把这个世界的想法翻译给那个世界' }, { name: '迭代引擎', emoji: '🔄', why: '帮你的愿景一步步落地' }],
+  'MAOP': [{ name: '闪电原型师', emoji: '⚡', why: '帮你加速，在完美之前先跑起来' }, { name: '狂热制造者', emoji: '🔨', why: '帮你分担执行压力' }],
+  'MCOP': [{ name: '狂热制造者', emoji: '🔨', why: '给你实证数据，别光看log' }, { name: '混沌工程师', emoji: '🌀', why: '帮你发现你漏掉的那些极端情况' }],
+  'BCOP': [{ name: '闪电原型师', emoji: '⚡', why: '你先做到60分，剩下的40分交给他快速迭代' }, { name: '万能胶水', emoji: '🤝', why: '帮你的作品找到合适的搭档' }],
+  'BAOP': [{ name: '规则重写者', emoji: '💣', why: '你的堡垒需要有人来测试它的边界' }, { name: '混沌工程师', emoji: '🌀', why: '帮你找到你没考虑过的攻击面' }],
+  'BAOF': [{ name: '规则重写者', emoji: '💣', why: '给你的组织增添打破常规的勇气' }, { name: '梦想工程师', emoji: '🛸', why: '给你一个值得组织的宏大愿景' }],
+  'MAOF': [{ name: '梦想工程师', emoji: '🛸', why: '你翻译他的想法，他给你最好的素材' }, { name: '规则重写者', emoji: '💣', why: '挑战你的翻译框架，让你看到新可能' }],
+  'BCOF': [{ name: '梦想工程师', emoji: '🛸', why: '给你一个值得拼的终极愿景' }, { name: '狂热制造者', emoji: '🔨', why: '给你源源不断的零件' }],
+  'MCOF': [{ name: '闪电原型师', emoji: '⚡', why: '帮你更快地迭代，强制发布节点' }, { name: '盲点狙击手', emoji: '🎯', why: '帮你发现每一个版本的致命漏洞' }],
+  'MASP': [{ name: '守护者', emoji: '🛡️', why: '帮你把疯狂的想法安全落地' }, { name: '万能胶水', emoji: '🤝', why: '帮你把想法传播出去' }],
+  'BASP': [{ name: '迭代引擎', emoji: '🔄', why: '你找到漏洞，他负责持续修补' }, { name: '堡垒工程师', emoji: '🏗️', why: '帮你系统化你的洞察' }],
+  'BCSP': [{ name: '堡垒工程师', emoji: '🏗️', why: '你找到的极端案例帮他加固防线' }, { name: '数据猎手', emoji: '🔬', why: '给你的混沌实验加上严谨的数据支撑' }],
+  'MCSP': [{ name: '万能胶水', emoji: '🤝', why: '帮你找到适合你发挥的场景' }, { name: '星际建筑师', emoji: '🌌', why: '帮你把你的能力框进一个更大的图景' }]
+};
+
+// ======================== STATE ========================
+
+let state = {
+  step: 'landing', // landing | testing | loading | result
+  currentQ: 0,
+  answers: {}, // keyed by question id, value = 0 (A) or 1 (B) for forced, 1-5 for likert
+  dimScores: { R: 0, Z: 0, T: 0, I: 0 },   // forced-choice direction scores
+  dimStrength: { R: 0, Z: 0, T: 0, I: 0 },   // likert strength indices (0-1 scale)
+  resultType: null,
+};
+
+// ======================== RENDER ========================
+
+const app = document.getElementById('app');
+const progressBar = document.getElementById('progressBar');
+
+function updateProgress(pct) {
+  progressBar.style.width = pct + '%';
+}
+
+function render() {
+  switch (state.step) {
+    case 'landing': renderLanding(); break;
+    case 'testing': renderQuestion(); break;
+    case 'loading': renderLoading(); break;
+    case 'result': renderResult(); break;
+  }
+}
+
+
+function renderLanding() {
+  updateProgress(0);
+  app.innerHTML = `
+    <div class="card" style="animation: fadeUp 0.6s ease;">
+      <div class="corner-mark tl"></div>
+      <div class="corner-mark tr"></div>
+      <div class="corner-mark bl"></div>
+      <div class="corner-mark br"></div>
+      <div style="height:18px;"></div>
+      <div class="hero-icon">\ud83e\uddea</div>
+      <div class="hero-title">RZTI</div>
+      <div class="hero-features">
+        <div class="hero-feat"><span>\u26a1</span>32\u9898 \u00b7 ~5min</div>
+        <div class="hero-feat"><span>\ud83e\uddec</span>16\u79cd\u4eba\u683c</div>
+        <div class="hero-feat"><span>\ud83e\udd1d</span>\u961f\u53cb\u5339\u914d</div>
+      </div>
+      <div style="text-align:left;color:var(--ink-muted);font-size:12px;line-height:2;margin-bottom:24px;border-top:1px dashed var(--border-draft);border-bottom:1px dashed var(--border-draft);padding:14px 0;">
+        RZTI，Realization-Zoom Type Indicator（实现-聚焦类型指标）是一套专为创客与极客设计的行为偏好分类工具。它类似于MBTI，但与你熟知的MBTI有一个根本差异——MBTI测的是"你如何认知世界"，而RZTI测的是<b style="color:var(--accent-rust)">"你如何造东西"</b>。它从四个与创业/造物直接相关的行为维度，刻画一个人在"把想法变成现实"这件事上的决策与行动倾向。通过真实生活场景揭示行为特征，而非抽象的心理陈述，让结果更能反映用户在造物过程中的实际反应。
+      </div>
+      <button class="btn btn-primary" onclick="startTest()">\u5f00\u59cb\u6d4b\u8bd5 \u2192</button>
+    </div>`;
+}
+
+function startTest() {
+  // Select questions (random from bank)
+  selectedQuestions = selectQuestions();
+  allQuestions = selectedQuestions.forcedChoice.concat(selectedQuestions.likert);
+  currentPhase = 'forced';
+  
+  state.step = 'testing';
+  state.currentQ = 0;
+  state.answers = {};
+  state.dimScores = { R: 0, Z: 0, T: 0, I: 0 };
+  state.dimStrength = { R: 0, Z: 0, T: 0, I: 0 };
+  render();
+}
+
+
+function renderQuestion() {
+  const q = getCurrentQuestion();
+  const total = getTotalQuestions();
+  const isLikert = q.isLikert;
+  
+  // Progress: forced-choice 88%, likert 88-97%
+  const forcedLen = selectedQuestions.forcedChoice.length;
+  const phaseProgress = isLikert ? 88 : (state.currentQ / forcedLen) * 88;
+  updateProgress(phaseProgress);
+
+  // If switching to Likert phase
+  if (isLikert && currentPhase === 'forced') {
+    currentPhase = 'likert';
+  }
+
+  let dotsHTML = '';
+  for (let i = 0; i < total; i++) {
+    if (i < state.currentQ) dotsHTML += '<div class="step-dot done"></div>';
+    else if (i === state.currentQ) dotsHTML += '<div class="step-dot active"></div>';
+    else dotsHTML += '<div class="step-dot"></div>';
+  }
+
+  const phaseLabel = isLikert ? '\u7a0b\u5ea6\u9898 \u00b7 ' + q.dimLabel.dimName : '\u8feb\u9009\u9898';
+
+  let answerHTML = '';
+  if (isLikert) {
+    // Likert 5-point scale
+    const labels = ['\u975e\u5e38\u4e0d\u540c\u610f', '\u6bd4\u8f83\u4e0d\u540c\u610f', '\u4e2d\u7acb', '\u6bd4\u8f83\u540c\u610f', '\u975e\u5e38\u540c\u610f'];
+    answerHTML = '<div class="likert-scale">';
+    for (let i = 1; i <= 5; i++) {
+      const sel = state.answers[q.id] === i ? ' selected' : '';
+      answerHTML += `
+        <button class="likert-btn${sel}" onclick="selectLikert(${q.id}, ${i})">
+          <span class="likert-dot">${i}</span>
+          <span class="likert-label">${labels[i-1]}</span>
+        </button>`;
+    }
+    answerHTML += '</div>';
+  } else {
+    // Forced-choice A/B
+    answerHTML = `
+      <div class="options">
+        <button class="option-btn${state.answers[q.id] === 0 ? ' selected' : ''}" onclick="selectForced(${q.id}, 0)">
+          <span class="option-letter">A</span>${q.a}
+        </button>
+        <button class="option-btn${state.answers[q.id] === 1 ? ' selected' : ''}" onclick="selectForced(${q.id}, 1)">
+          <span class="option-letter">B</span>${q.b}
+        </button>
+      </div>`;
+  }
+
+  const hasAnswer = state.answers[q.id] !== undefined;
+  const isLast = state.currentQ === total - 1;
+
+  app.innerHTML = `
+    <div class="card">
+      <div class="corner-mark tl"></div>
+      <div class="corner-mark tr"></div>
+      <div class="step-dots">${dotsHTML}</div>
+      <div class="question-num">
+        <span style="display:inline-block;background:${isLikert ? 'var(--accent-teal)' : 'var(--ink)'};color:var(--paper);padding:2px 8px;border-radius:3px;font-size:10px;margin-right:8px;">${isLikert ? 'LIKERT' : 'CHOICE'}</span>
+        Q${q.id} / ${total}
+      </div>
+      <div class="question-text">${q.text}</div>
+      ${answerHTML}
+      <button class="btn btn-primary" style="margin-top:20px;${!hasAnswer ? 'opacity:0.35;pointer-events:none;' : ''}" 
+        onclick="nextQuestion()">
+        ${isLast ? '\u67e5\u770b\u7ed3\u679c' : '\u4e0b\u4e00\u9898 \u2192'}
+      </button>
+      ${isLast ? '<p style="text-align:center;font-size:11px;color:var(--ink-muted);margin-top:8px;">\u8fd9\u662f\u6700\u540e\u4e00\u9898\u4e86</p>' : ''}
+    </div>`;
+}
+
+function selectForced(qId, optIdx) {
+  state.answers[qId] = optIdx;
+  render();
+}
+
+function selectLikert(qId, value) {
+  state.answers[qId] = value;
+  render();
+}
+
+function nextQuestion() {
+  const q = getCurrentQuestion();
+  if (state.answers[q.id] === undefined) return;
+
+  const total = getTotalQuestions();
+  if (state.currentQ < total - 1) {
+    state.currentQ++;
+    render();
+  } else {
+    calcScores();
+    goToResult();
+  }
+}
+
+
+function calcScores() {
+  state.dimScores = { R: 0, Z: 0, T: 0, I: 0 };
+  state.dimStrength = { R: 0, Z: 0, T: 0, I: 0 };
+  const likertRaw = { R: [], Z: [], T: [], I: [] };
+
+  // Forced-choice: A (+1 positive pole), B (-1 negative pole)
+  selectedQuestions.forcedChoice.forEach(q => {
+    const ansIdx = state.answers[q.id];
+    if (ansIdx === undefined) return;
+    // A=0 -> +1, B=1 -> -1
+    state.dimScores[q.dim] += (ansIdx === 0 ? 1 : -1);
+  });
+
+  // Likert: positive -> raw 1-5; negative -> reverse score (6 - raw)
+  selectedQuestions.likert.forEach(q => {
+    const raw = state.answers[q.id];
+    if (raw === undefined) return;
+    const score = q.isNegative ? (6 - raw) : raw;
+    likertRaw[q.dim].push(score);
+  });
+
+  // Strength index: average of 2 likert scores / 5 -> 0-1 range
+  ['R', 'Z', 'T', 'I'].forEach(dim => {
+    if (likertRaw[dim].length === 2) {
+      const avg = (likertRaw[dim][0] + likertRaw[dim][1]) / 2;
+      state.dimStrength[dim] = Math.round((avg / 5) * 100) / 100; // 0-1, 2 decimals
+    }
+  });
+}
+
+function getResultKey() {
+  const scores = state.dimScores;
+  // For 6 forced-choice questions per dimension, range is -6 to +6
+  // Threshold: >= +2 -> positive, <= -2 -> negative, between -> balanced (use sign)
+  const threshold = 2;
+  const r = scores.R >= threshold ? 'B' : (scores.R <= -threshold ? 'M' : (scores.R >= 0 ? 'B' : 'M'));
+  const z = scores.Z >= threshold ? 'A' : (scores.Z <= -threshold ? 'C' : (scores.Z >= 0 ? 'A' : 'C'));
+  const t = scores.T >= threshold ? 'O' : (scores.T <= -threshold ? 'S' : (scores.T >= 0 ? 'O' : 'S'));
+  const i = scores.I >= threshold ? 'F' : (scores.I <= -threshold ? 'P' : (scores.I >= 0 ? 'F' : 'P'));
+  return `${r}${z}${t}${i}`;
+}
+
+
+function goToResult() {
+  const key = getResultKey();
+  state.resultType = typeMap[key];
+  if (!state.resultType) {
+    // Fallback: find the closest match
+    const keys = Object.keys(typeMap);
+    // Just use the first match that shares the most letters
+    let best = keys[0];
+    let bestScore = 0;
+    keys.forEach(k => {
+      let score = 0;
+      for (let i = 0; i < 4; i++) {
+        if (k[i] === key[i]) score++;
+      }
+      if (score > bestScore) { bestScore = score; best = k; }
+    });
+    state.resultType = typeMap[best];
+  }
+  showLoading();
+}
+
+function showLoading() {
+  state.step = 'loading';
+  updateProgress(97);
+  app.innerHTML = `
+    <div class="card">
+      <div class="corner-mark tl"></div>
+      <div class="corner-mark tr"></div>
+      <div class="loading-section">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">\u6b63\u5728\u7f16\u8bd1\u4f60\u7684\u8eab\u4efd\u5361</div>
+        <div class="loading-sub">COMPILING YOUR IDENTITY CARD...</div>
+      </div>
+    </div>`;
+  setTimeout(() => {
+    state.step = 'result';
+    updateProgress(100);
+    render();
+  }, 1500);
+}
+
+
+function renderResult() {
+  const type = state.resultType;
+  if (!type) { app.innerHTML = '<div class="card"><p>\u7ed3\u679c\u52a0\u8f7d\u5931\u8d25\uff0c\u8bf7\u91cd\u65b0\u6d4b\u8bd5</p><button class="btn btn-primary" onclick="resetTest()">\u91cd\u65b0\u6d4b\u8bd5</button></div>'; return; }
+  
+  const key = getResultKey();
+  const mates = mateMap[key] || [];
+  const scores = state.dimScores;
+  const strength = state.dimStrength;
+
+  const dimLabelsShort = {
+    R: { left: 'M(\u6570\u5b57\u6d3e Modeler)', right: 'B(\u7269\u7406\u6d3e Builder)' },
+    Z: { left: 'C(\u5fae\u89c2\u6d3e Craftsman)', right: 'A(\u5b8f\u89c2\u6d3e Architect)' },
+    T: { left: 'S(\u72ec\u884c\u6d3e Soloist)', right: 'O(\u56e2\u961f\u6d3e Organizer)' },
+    I: { left: 'P(\u5b8c\u7f8e\u6d3e Perfectionist)', right: 'F(\u52a1\u5b9e\u6d3e Fixer)' }
+  };
+
+  // Dimension bars + strength stars
+  let dimDetailHTML = '';
+  ['R', 'Z', 'T', 'I'].forEach(dim => {
+    const score = scores[dim];
+    // For 6 forced-choice questions, maxAbs = 6
+    const maxAbs = 6;
+    const pct = Math.round(((score + maxAbs) / (maxAbs * 2)) * 100);
+    const leftPct = pct;
+    const rightPct = 100 - pct;
+    const stars = getStrengthStars(strength[dim]);
+    dimDetailHTML += `
+      <div class="dim-row">
+        <div class="dim-left">${dimLabelsShort[dim].left} ${leftPct}%</div>
+        <div class="dim-bar-wrap">
+          <div class="dim-bar-fill ${type.family}" style="width:${pct}%;"></div>
+        </div>
+        <div class="dim-right">${rightPct}% ${dimLabelsShort[dim].right}</div>
+      </div>
+      <div class="dim-strength">${stars} ${Math.round(strength[dim] * 100)}%</div>`;
+  });
+
+  app.innerHTML = `
+    <div class="result-wrap">
+      <div class="result-header ${type.family}">
+        <div style="position:absolute;top:10px;left:14px;font-size:9px;font-family:var(--font-mono);color:rgba(255,255,255,0.35);letter-spacing:2px;">RZTI RESULT</div>
+        <div class="result-type-emoji">${type.emoji}</div>
+        <div class="result-type-name">${type.name} ${key}</div>
+        <div class="result-type-tag">${type.role}</div>
+      </div>
+      <div class="result-body">
+        <div class="result-section">
+          <div class="result-label">\u4eba\u683c\u753b\u50cf</div>
+          <div class="result-desc">${type.desc}</div>
+        </div>
+
+        
+
+        <div class="result-section">
+          <div class="result-label">\u9ed1\u5ba2\u677e\u89d2\u8272</div>
+          <div class="result-grid">
+            <div class="result-stat">
+              <div class="result-stat-label">\u9ed1\u5ba2\u677e\u4eba\u7fa4\u5360\u6bd4</div>
+              <div class="result-stat-value" style="font-size:22px;font-weight:900;">${type.rarity}%</div>
+            </div>
+            <div class="result-stat">
+              <div class="result-stat-label">\u5929\u7136\u89d2\u8272</div>
+              <div class="result-stat-value">${type.role}</div>
+            </div>
+            <div class="result-stat">
+              <div class="result-stat-label">\u771f\u5b9e\u75db\u70b9</div>
+              <div class="result-stat-value" style="font-size:14px;">${type.pain}</div>
+            </div>
+            <div class="result-stat">
+              <div class="result-stat-label">\u7ed9\u4f60\u7684\u89e3\u6cd5</div>
+              <div class="result-stat-value" style="font-size:14px;">${type.solution}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-label">\u6700\u4f73\u961f\u53cb\u5339\u914d</div>
+          <div class="mate-grid">
+            ${mates.map(m => `
+              <div class="mate-item">
+                <div class="mate-emoji">${m.emoji}</div>
+                <div class="mate-info">
+                  <div class="mate-name">${m.name}</div>
+                  <div class="mate-why">${m.why}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+<div class="result-section">
+          <div class="result-label">\u7ef4\u5ea6\u89e3\u6790 + \u5f3a\u5ea6\u6307\u6570</div>
+          <div class="dim-bars">${dimDetailHTML}</div>
+        </div>
+
+        <div class="share-section">
+          <div class="share-code">RZTI</div>
+          <button class="btn btn-share" onclick="shareResult()">
+            \ud83d\udcf8 \u5206\u4eab\u6211\u7684\u8eab\u4efd\u5361
+          </button>
+          <br>
+          <button class="retake-btn" onclick="resetTest()">\u91cd\u65b0\u6d4b\u8bd5</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function getStrengthStars(val) {
+  // val is 0-1, map to 1-5 stars
+  const starCount = Math.round(val * 4) + 1; // 1-5 stars
+  return '\u2605'.repeat(starCount) + '\u2606'.repeat(5 - starCount);
+}
+
+function shareResult() {
+  const type = state.resultType;
+  if (!type) return;
+  const key = getResultKey();
+  const mates = mateMap[key] || [];
+  const scores = state.dimScores;
+  const strength = state.dimStrength;
+  const dimLabelsShort = {
+    R: { left: 'M(\u6570\u5b57\u6d3e)', right: 'B(\u7269\u7406\u6d3e)' },
+    Z: { left: 'C(\u5fae\u89c2\u6d3e)', right: 'A(\u5b8f\u89c2\u6d3e)' },
+    T: { left: 'S(\u72ec\u884c\u6d3e)', right: 'O(\u56e2\u961f\u6d3e)' },
+    I: { left: 'P(\u5b8c\u7f8e\u6d3e)', right: 'F(\u52a1\u5b9e\u6d3e)' }
+  };
+
+  // \u6784\u5efa\u5206\u4eab\u5361\u5185\u5bb9
+  let dimBarsHTML = '';
+  ['R','Z','T','I'].forEach(dim => {
+    const score = scores[dim];
+    const maxAbs = 6;
+    const pct = Math.round(((score + maxAbs) / (maxAbs * 2)) * 100);
+    dimBarsHTML += `
+      <div class="sc-dim-row">
+        <div class="sc-dim-label">${dimLabelsShort[dim].left}</div>
+        <div class="sc-dim-bar-wrap">
+          <div class="sc-dim-bar-fill ${type.family}" style="width:${pct}%;"></div>
+        </div>
+        <div class="sc-dim-percent">${pct}%</div>
+        <div class="sc-dim-label">${dimLabelsShort[dim].right}</div>
+      </div>`;
+  });
+
+  // \u6784\u5efa\u6700\u4f73\u961f\u53cb\u6458\u8981
+  const matesHTML = mates.map(m => 
+    `<span style="margin-right:10px;">${m.emoji} ${m.name}</span>`
+  ).join('');
+
+  // \u521b\u5efa\u6216\u83b7\u53d6 overlay
+  let overlay = document.getElementById('share-card-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'share-card-overlay';
+    document.body.appendChild(overlay);
+  }
+
+  overlay.innerHTML = `
+    <div id="share-card">
+      <div class="sc-header">
+        <div class="sc-emoji">${type.emoji}</div>
+        <div class="sc-name">${type.name}</div>
+        <div class="sc-code">${key}</div>
+        <div class="sc-role">${type.role}</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-stat-row">
+          <div class="sc-stat">
+            <div class="sc-stat-val">${type.rarity}%</div>
+            <div class="sc-stat-lbl">\u4eba\u7fa4\u5360\u6bd4</div>
+          </div>
+          <div class="sc-stat">
+            <div class="sc-stat-val" style="font-size:16px;">${type.role}</div>
+            <div class="sc-stat-lbl">\u5929\u7136\u89d2\u8272</div>
+          </div>
+        </div>
+        <div class="sc-section-title">维度解析</div>
+        ${dimBarsHTML}
+        <div class="sc-section-title">最佳队友</div>
+        <div style="font-size:12px;color:var(--ink);text-align:center;line-height:1.8;">
+          ${matesHTML}
+        </div>
+      </div>
+      <div class="sc-footer">
+        <div class="sc-footer-title">RZTI \u4eba\u683c\u6d4b\u8bd5</div>
+        <div class="sc-footer-url">4e8221fcf045406b98e506dbb3ac82ec.app.codebuddy.work</div>
+      </div>
+    </div>
+    <div class="sc-btns">
+      <button class="sc-btn sc-btn-download" onclick="downloadShareCard()">\ud83d\udcf8 \u4fdd\u5b58\u56fe\u7247</button>
+      <button class="sc-btn sc-btn-close" onclick="closeShareCard()">\u5173\u95ed</button>
+    </div>
+  `;
+
+  overlay.classList.add('active');
+
+  // \u9884\u52a0\u8f7d html2canvas \u5982\u679c\u8fd8\u6ca1\u6709
+  if (typeof html2canvas === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+    script.onload = () => { /* loaded */ };
+    document.head.appendChild(script);
+  }
+}
+
+function closeShareCard() {
+  const overlay = document.getElementById('share-card-overlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'share-card-overlay') {
+    closeShareCard();
+  }
+});
+
+function downloadShareCard() {
+  const card = document.getElementById('share-card');
+  if (!card) return;
+  
+  if (typeof html2canvas === 'undefined') {
+    // \u52a0\u8f7d html2canvas \u540e\u91cd\u8bd5
+    const script = document.createElement('script');
+    script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+    script.onload = () => downloadShareCard();
+    document.head.appendChild(script);
+    return;
+  }
+
+  const btn = document.querySelector('.sc-btn-download');
+  if (btn) btn.textContent = '\u751f\u6210\u4e2d...';
+
+  html2canvas(card, {
+    scale: 2,
+    backgroundColor: '#F5F0E8',
+    useCORS: true,
+    allowTaint: true,
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `RZTI_${getResultKey()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    if (btn) btn.textContent = '\u2705 \u5df2\u4fdd\u5b58';
+    setTimeout(() => {
+      if (btn) btn.textContent = '\ud83d\udcf8 \u4fdd\u5b58\u56fe\u7247';
+    }, 2000);
+  }).catch(err => {
+    console.error('html2canvas error:', err);
+    if (btn) btn.textContent = '\u274c \u5931\u8d25\uff0c\u8bf7\u91cd\u8bd5';
+    setTimeout(() => {
+      if (btn) btn.textContent = '\ud83d\udcf8 \u4fdd\u5b58\u56fe\u7247';
+    }, 2000);
+  });
+}
+
+function resetTest() {
+  selectedQuestions = null;
+  allQuestions = null;
+  currentPhase = null;
+  state = {
+    step: 'landing',
+    currentQ: 0,
+    answers: {},
+    dimScores: { R: 0, Z: 0, T: 0, I: 0 },
+    dimStrength: { R: 0, Z: 0, T: 0, I: 0 },
+    resultType: null,
+  };
+  updateProgress(0);
+  render();
+}
+
+// Init
+render();
+
+</script>
+</body>
+</html>
