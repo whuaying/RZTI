@@ -511,19 +511,25 @@ body::after {
 
 .prev-btn {
   display: block;
-  margin: 14px auto 0;
-  background: transparent;
-  border: none;
-  color: var(--ink-muted);
-  font-size: 12px;
+  margin: 18px auto 0;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 6px 14px;
-  font-family: var(--font-mono);
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-underline-offset: 3px;
+  padding: 12px 40px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+  transition: all 0.15s ease;
 }
-.prev-btn:hover { color: var(--ink); }
+.prev-btn:hover {
+  background: var(--ink-light);
+  border-color: var(--ink-muted);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+.prev-btn:active { transform: translateY(0); }
 
 /* ---------- Corner marks on card ---------- */
 .corner-mark {
@@ -1492,29 +1498,21 @@ function renderQuestion() {
       </div>
       <div class="question-text">${q.text}</div>
       ${answerHTML}
-      ${state.currentQ > 0 ? '<button class="prev-btn" onclick="prevQuestion()">\u2190 \u4e0a\u4e00\u9898</button>' : ''}
+      ${state.currentQ > 0 ? '<button class="prev-btn" onclick="prevQuestion()">\u2190 \u8fd4\u56de\u4e0a\u4e00\u9898</button>' : ''}
       ${isLast ? '<p style="text-align:center;font-size:11px;color:var(--ink-muted);margin-top:16px;">\u8fd9\u662f\u6700\u540e\u4e00\u9898\u4e86\uff0c\u7b54\u5b8c\u81ea\u52a8\u51fa\u7ed3\u679c</p>' : '<p style="text-align:center;font-size:11px;color:var(--ink-muted);margin-top:12px;">\u9009\u62e9\u540e\u81ea\u52a8\u8df3\u8f6c\u4e0b\u4e00\u9898</p>'}
     </div>`;
 }
 
-let autoAdvanceTimer = null;
-
 function selectForced(qId, optIdx) {
   state.answers[qId] = optIdx;
   render();
-  clearTimeout(autoAdvanceTimer);
-  autoAdvanceTimer = setTimeout(() => {
-    if (state.answers[qId] === optIdx) nextQuestion();
-  }, 350);
+  nextQuestion();
 }
 
 function selectLikert(qId, value) {
   state.answers[qId] = value;
   render();
-  clearTimeout(autoAdvanceTimer);
-  autoAdvanceTimer = setTimeout(() => {
-    if (state.answers[qId] === value) nextQuestion();
-  }, 450);
+  nextQuestion();
 }
 
 function nextQuestion() {
@@ -1532,7 +1530,6 @@ function nextQuestion() {
 }
 
 function prevQuestion() {
-  clearTimeout(autoAdvanceTimer);
   if (state.currentQ > 0) {
     state.currentQ--;
     render();
