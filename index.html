@@ -509,6 +509,22 @@ body::after {
 }
 .retake-btn:hover { color: var(--ink); }
 
+.prev-btn {
+  display: block;
+  margin: 14px auto 0;
+  background: transparent;
+  border: none;
+  color: var(--ink-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-underline-offset: 3px;
+}
+.prev-btn:hover { color: var(--ink); }
+
 /* ---------- Corner marks on card ---------- */
 .corner-mark {
   position: absolute;
@@ -611,8 +627,10 @@ body::after {
   z-index: 9999;
   background: rgba(0,0,0,0.6);
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   flex-direction: column;
+  overflow-y: auto;
+  padding: 24px 16px;
 }
 #share-card-overlay.active { display: flex; }
 #share-card {
@@ -795,6 +813,76 @@ body::after {
   -webkit-user-drag: none;
   user-select: none;
 }
+
+/* ---------- RZTI Info Modal ---------- */
+#rzti-info-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+}
+#rzti-info-overlay.active { display: flex; }
+#rzti-info-card {
+  width: 90%;
+  max-width: 440px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #F5F0E8;
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+  padding: 32px 28px 24px;
+  position: relative;
+}
+#rzti-info-card .ri-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--ink-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+#rzti-info-card .ri-close:hover { color: var(--ink); }
+#rzti-info-card .ri-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--ink);
+  font-family: var(--font-cn);
+  margin-bottom: 4px;
+}
+#rzti-info-card .ri-subtitle {
+  font-size: 12px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  margin-bottom: 18px;
+  letter-spacing: 0.5px;
+}
+#rzti-info-card .ri-body {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--ink);
+}
+#rzti-info-card .ri-body p { margin-bottom: 12px; }
+#rzti-info-card .ri-body strong { color: var(--accent-rust); }
+#rzti-info-card .ri-divider {
+  border: none;
+  border-top: 1.5px dashed var(--border-draft);
+  margin: 16px 0;
+}
+#rzti-info-card .ri-dim {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-muted);
+}
+#rzti-info-card .ri-dim-item {
+  margin-bottom: 8px;
+}
+#rzti-info-card .ri-dim-item b { color: var(--ink); }
 
 /* ---------- XHS Share Card ---------- */
 #share-card-xhs {
@@ -1404,6 +1492,7 @@ function renderQuestion() {
       </div>
       <div class="question-text">${q.text}</div>
       ${answerHTML}
+      ${state.currentQ > 0 ? '<button class="prev-btn" onclick="prevQuestion()">\u2190 \u4e0a\u4e00\u9898</button>' : ''}
       ${isLast ? '<p style="text-align:center;font-size:11px;color:var(--ink-muted);margin-top:16px;">\u8fd9\u662f\u6700\u540e\u4e00\u9898\u4e86\uff0c\u7b54\u5b8c\u81ea\u52a8\u51fa\u7ed3\u679c</p>' : '<p style="text-align:center;font-size:11px;color:var(--ink-muted);margin-top:12px;">\u9009\u62e9\u540e\u81ea\u52a8\u8df3\u8f6c\u4e0b\u4e00\u9898</p>'}
     </div>`;
 }
@@ -1439,6 +1528,14 @@ function nextQuestion() {
   } else {
     calcScores();
     goToResult();
+  }
+}
+
+function prevQuestion() {
+  clearTimeout(autoAdvanceTimer);
+  if (state.currentQ > 0) {
+    state.currentQ--;
+    render();
   }
 }
 
@@ -1633,6 +1730,8 @@ function renderResult() {
           </button>
           <br>
           <button class="retake-btn" onclick="resetTest()">\u91cd\u65b0\u6d4b\u8bd5</button>
+          <br>
+          <button class="retake-btn" onclick="showRZTIInfo()">\u2139\ufe0f \u4ec0\u4e48\u662f RZTI\uff1f</button>
         </div>
       </div>
     </div>`;
@@ -1993,6 +2092,38 @@ function resetTest() {
 // Init
 render();
 
+function showRZTIInfo() {
+  const overlay = document.getElementById('rzti-info-overlay');
+  if (overlay) overlay.classList.add('active');
+}
+function closeRZTIInfo() {
+  const overlay = document.getElementById('rzti-info-overlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
 </script>
+
+<!-- RZTI Info Modal -->
+<div id="rzti-info-overlay" onclick="if(event.target.id==='rzti-info-overlay')closeRZTIInfo()">
+  <div id="rzti-info-card">
+    <button class="ri-close" onclick="closeRZTIInfo()">&times;</button>
+    <div class="ri-title">什么是 RZTI？</div>
+    <div class="ri-subtitle">Realization-Zoom Type Indicator</div>
+    <div class="ri-body">
+      <p><strong>RZTI</strong>（Realization-Zoom Type Indicator，实现-聚焦类型指标）是一套专为<strong>创客与极客</strong>设计的行为偏好分类工具。</p>
+      <p>它类似于 MBTI，但与你熟知的 MBTI 有一个根本差异——</p>
+      <p>MBTI 测的是<strong>"你如何认知世界"</strong>，而 RZTI 测的是<strong>"你如何造东西"</strong>。</p>
+      <p>它从四个与创业/造物直接相关的行为维度，刻画一个人在"把想法变成现实"这件事上的决策与行动倾向。RZTI Test 通过真实生活场景揭示行为特征，而非抽象的心理陈述。RZTI 同样强调情境化、行为化，让结果更能反映用户在造物过程中的实际反应。</p>
+    </div>
+    <hr class="ri-divider">
+    <div class="ri-dim">
+      <div class="ri-dim-item"><b>R — Realization（实现方式）</b>：数字派(M) vs 物理派(B)</div>
+      <div class="ri-dim-item"><b>Z — Zoom（聚焦层次）</b>：微观派(C) vs 宏观派(A)</div>
+      <div class="ri-dim-item"><b>T — Teamwork（协作模式）</b>：独行派(S) vs 团队派(O)</div>
+      <div class="ri-dim-item"><b>I — Ideal（理想取向）</b>：完美派(P) vs 务实派(F)</div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
