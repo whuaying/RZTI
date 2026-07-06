@@ -226,6 +226,14 @@ body::after {
   box-shadow: 3px 3px 0 #8B3826;
 }
 .btn-share:hover { box-shadow: 5px 5px 0 #8B3826; }
+.btn-share-xhs {
+  background: #FF2442;
+  border-color: #FF2442;
+  color: #fff;
+  box-shadow: 3px 3px 0 #CC1D35;
+  margin-top: 8px;
+}
+.btn-share-xhs:hover { box-shadow: 5px 5px 0 #CC1D35; }
 
 /* ---------- Question ---------- */
 .question-num {
@@ -730,6 +738,25 @@ body::after {
   font-family: var(--font-mono);
   opacity: 0.6;
 }
+#share-card .sc-footer-cta {
+  font-size: 13px;
+  color: var(--accent-rust);
+  margin-top: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+#share-card .sc-footer-qr-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+#share-card .sc-footer-qr-wrap canvas,
+#share-card .sc-footer-qr-wrap img {
+  display: block;
+  border-radius: 6px;
+  background: #fff;
+  padding: 4px;
+}
 #share-card-overlay .sc-btns {
   margin-top: 16px;
   display: flex;
@@ -753,9 +780,153 @@ body::after {
   color: white;
   backdrop-filter: blur(4px);
 }
+#share-img-wrap {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 320px;
+  width: 90%;
+}
+#share-img-wrap img {
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* ---------- XHS Share Card ---------- */
+#share-card-xhs {
+  width: 375px;
+  background: linear-gradient(180deg, #1A1610 0%, #2D2820 40%, #F5F0E8 40%, #F5F0E8 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+  position: relative;
+}
+#share-card-xhs .xhs-top {
+  padding: 26px 24px 20px;
+  text-align: center;
+  color: #F5F0E8;
+}
+#share-card-xhs .xhs-badge {
+  display: inline-block;
+  background: rgba(245,240,232,0.15);
+  color: #E8D5B0;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  letter-spacing: 3px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+#share-card-xhs .xhs-emoji { font-size: 58px; line-height: 1.2; }
+#share-card-xhs .xhs-name {
+  font-size: 30px;
+  font-weight: 900;
+  margin: 8px 0 4px;
+  font-family: var(--font-cn);
+  color: #FFD700;
+}
+#share-card-xhs .xhs-role {
+  font-size: 14px;
+  color: #E0C9A0;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+#share-card-xhs .xhs-body {
+  padding: 22px 24px 10px;
+}
+#share-card-xhs .xhs-stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+#share-card-xhs .xhs-stat {
+  text-align: center;
+  background: rgba(26,22,16,0.06);
+  border-radius: 10px;
+  padding: 10px 18px;
+  min-width: 80px;
+}
+#share-card-xhs .xhs-stat-val {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--ink);
+}
+#share-card-xhs .xhs-stat-lbl {
+  font-size: 10px;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+#share-card-xhs .xhs-dim-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+#share-card-xhs .xhs-dim-label {
+  width: 60px;
+  text-align: right;
+  font-weight: 700;
+  white-space: nowrap;
+}
+#share-card-xhs .xhs-dim-bar-wrap {
+  flex: 1;
+  height: 8px;
+  background: rgba(26,22,16,0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+#share-card-xhs .xhs-dim-bar-fill {
+  display: block;
+  width: 0;
+  height: 8px;
+  border-radius: 4px;
+}
+#share-card-xhs .xhs-dim-percent {
+  font-weight: 700;
+  font-size: 12px;
+  min-width: 35px;
+  text-align: center;
+  font-family: var(--font-mono);
+}
+#share-card-xhs .xhs-footer {
+  text-align: center;
+  padding: 14px 24px 22px;
+  background: linear-gradient(180deg, #F5F0E8 0%, #1A1610 100%);
+  margin-top: 12px;
+}
+#share-card-xhs .xhs-cta {
+  font-size: 16px;
+  font-weight: 800;
+  color: #FFD700;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+#share-card-xhs .xhs-cta-sub {
+  font-size: 11px;
+  color: #C0B090;
+  font-family: var(--font-mono);
+} 
+#share-img-wrap .sc-img-tip {
+  color: white;
+  font-size: 14px;
+  opacity: 0.9;
+  text-align: center;
+  padding: 6px 12px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
 
 </style>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -936,7 +1107,7 @@ const questionBank = {
         { text: "你在选择加入一个创业项目时，最看重的是？", a: "这个项目解决的社会问题有多大，市场前景如何", b: "这个项目的技术挑战和愿景是否足够吸引你，能否做出令人骄傲的产品" },
       ]},
       { name: "综合价值观与生活决策", questions: [
-        { text: "当“快速占领市场”和“打造极致产品”发生冲突时，你通常更倾向于？", a: "先抓住市场窗口期，用够用的产品快速铺开，后续再迭代完善", b: "先把产品做到足够好再推向市场，宁可慢一点也要确保体验和品质" },
+        { text: "当\u201c快速占领市场\u201d和\u201c打造极致产品\u201d发生冲突时，你通常更倾向于？", a: "先抓住市场窗口期，用够用的产品快速铺开，后续再迭代完善", b: "先把产品做到足够好再推向市场，宁可慢一点也要确保体验和品质" },
         { text: "如果你中了一笔足以退休的彩票，你还会继续做当前的工作吗？", a: "会，但可能会转向更能直接帮助他人的项目或公益事业", b: "会，但可能会选择自己感兴趣的技术课题深入研究，追求极致" },
         { text: "在你看来，一个理想的科技产品应该？", a: "让更多人以更低成本享受科技带来的便利，缩小数字鸿沟", b: "代表人类科技的最高水平，推动行业边界向前拓展" },
         { text: "当你回顾自己职业生涯时，你希望被如何记住？", a: "我是一个创造了价值、解决了问题的人", b: "我是一个做出了卓越产品、定义了行业标准的人" },
@@ -1220,7 +1391,6 @@ function renderQuestion() {
       </div>`;
   }
 
-  const hasAnswer = state.answers[q.id] !== undefined;
   const isLast = state.currentQ === total - 1;
 
   app.innerHTML = `
@@ -1234,22 +1404,28 @@ function renderQuestion() {
       </div>
       <div class="question-text">${q.text}</div>
       ${answerHTML}
-      <button class="btn btn-primary" style="margin-top:20px;${!hasAnswer ? 'opacity:0.35;pointer-events:none;' : ''}" 
-        onclick="nextQuestion()">
-        ${isLast ? '\u67e5\u770b\u7ed3\u679c' : '\u4e0b\u4e00\u9898 \u2192'}
-      </button>
-      ${isLast ? '<p style="text-align:center;font-size:11px;color:var(--ink-muted);margin-top:8px;">\u8fd9\u662f\u6700\u540e\u4e00\u9898\u4e86</p>' : ''}
+      ${isLast ? '<p style="text-align:center;font-size:11px;color:var(--ink-muted);margin-top:16px;">\u8fd9\u662f\u6700\u540e\u4e00\u9898\u4e86\uff0c\u7b54\u5b8c\u81ea\u52a8\u51fa\u7ed3\u679c</p>' : '<p style="text-align:center;font-size:11px;color:var(--ink-muted);margin-top:12px;">\u9009\u62e9\u540e\u81ea\u52a8\u8df3\u8f6c\u4e0b\u4e00\u9898</p>'}
     </div>`;
 }
+
+let autoAdvanceTimer = null;
 
 function selectForced(qId, optIdx) {
   state.answers[qId] = optIdx;
   render();
+  clearTimeout(autoAdvanceTimer);
+  autoAdvanceTimer = setTimeout(() => {
+    if (state.answers[qId] === optIdx) nextQuestion();
+  }, 350);
 }
 
 function selectLikert(qId, value) {
   state.answers[qId] = value;
   render();
+  clearTimeout(autoAdvanceTimer);
+  autoAdvanceTimer = setTimeout(() => {
+    if (state.answers[qId] === value) nextQuestion();
+  }, 450);
 }
 
 function nextQuestion() {
@@ -1375,8 +1551,8 @@ function renderResult() {
     // For 6 forced-choice questions, maxAbs = 6
     const maxAbs = 6;
     const pct = Math.round(((score + maxAbs) / (maxAbs * 2)) * 100);
-    const leftPct = pct;
-    const rightPct = 100 - pct;
+    const leftPct = 100 - pct;
+    const rightPct = pct;
     const stars = getStrengthStars(strength[dim]);
     dimDetailHTML += `
       <div class="dim-row">
@@ -1451,6 +1627,9 @@ function renderResult() {
           <div class="share-code">RZTI</div>
           <button class="btn btn-share" onclick="shareResult()">
             \ud83d\udcf8 \u5206\u4eab\u6211\u7684\u8eab\u4efd\u5361
+          </button>
+          <button class="btn btn-share-xhs" onclick="shareResultXHS()">
+            \ud83d\udcd5 \u5c0f\u7ea2\u4e66\u5206\u4eab
           </button>
           <br>
           <button class="retake-btn" onclick="resetTest()">\u91cd\u65b0\u6d4b\u8bd5</button>
@@ -1536,9 +1715,17 @@ function shareResult() {
         </div>
       </div>
       <div class="sc-footer">
-        <div class="sc-footer-title">RZTI \u4eba\u683c\u6d4b\u8bd5</div>
-        <div class="sc-footer-url">4e8221fcf045406b98e506dbb3ac82ec.app.codebuddy.work</div>
+        <div class="sc-footer-title">RZTI 人格测试</div>
+        <div class="sc-footer-url">b5d9869510034614bba24bdfb889faa8.app.codebuddy.work</div>
+        <div class="sc-footer-qr-wrap">
+          <div id="share-qr"></div>
+        </div>
+        <div class="sc-footer-cta">来测测你是哪种类型的 Builder？</div>
       </div>
+    </div>
+    <div id="share-img-wrap" style="display:none;">
+      <img id="share-img" />
+      <div class="sc-img-tip">长按图片保存到相册</div>
     </div>
     <div class="sc-btns">
       <button class="sc-btn sc-btn-download" onclick="downloadShareCard()">\ud83d\udcf8 \u4fdd\u5b58\u56fe\u7247</button>
@@ -1548,6 +1735,20 @@ function shareResult() {
 
   overlay.classList.add('active');
 
+  // 生成二维码
+  const qrEl = document.getElementById('share-qr');
+  if (qrEl && typeof QRCode !== 'undefined') {
+    qrEl.innerHTML = '';
+    new QRCode(qrEl, {
+      text: 'https://b5d9869510034614bba24bdfb889faa8.app.codebuddy.work',
+      width: 80,
+      height: 80,
+      colorDark: '#1A1610',
+      colorLight: '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+  }
+
   // \u9884\u52a0\u8f7d html2canvas \u5982\u679c\u8fd8\u6ca1\u6709
   if (typeof html2canvas === 'undefined') {
     const script = document.createElement('script');
@@ -1555,6 +1756,152 @@ function shareResult() {
     script.onload = () => { /* loaded */ };
     document.head.appendChild(script);
   }
+}
+
+function shareResultXHS() {
+  const type = state.resultType;
+  if (!type) return;
+  const key = getResultKey();
+  const scores = state.dimScores;
+  const dimLabelsShort = {
+    R: { left: 'M(数字派)', right: 'B(物理派)' },
+    Z: { left: 'C(微观派)', right: 'A(宏观派)' },
+    T: { left: 'S(独行派)', right: 'O(团队派)' },
+    I: { left: 'P(完美派)', right: 'F(务实派)' }
+  };
+
+  // 按人格家族取色
+  const familyColor = {
+    blue: '#3B82C4',
+    red: '#C45A3C',
+    green: '#4A8B6B',
+    purple: '#7B4EA5'
+  }[type.family] || '#3B82C4';
+
+  // 维度条形图
+  let dimBarsHTML = '';
+  ['R','Z','T','I'].forEach(dim => {
+    const score = scores[dim];
+    const maxAbs = 6;
+    const pct = Math.round(((score + maxAbs) / (maxAbs * 2)) * 100);
+    dimBarsHTML += `
+      <div class="xhs-dim-row">
+        <div class="xhs-dim-label">${dimLabelsShort[dim].left}</div>
+        <div class="xhs-dim-bar-wrap">
+          <div class="xhs-dim-bar-fill" style="width:${pct}%; background:${familyColor};"></div>
+        </div>
+        <div class="xhs-dim-percent">${pct}%</div>
+        <div class="xhs-dim-label">${dimLabelsShort[dim].right}</div>
+      </div>`;
+  });
+
+  // 创建或获取 overlay
+  let overlay = document.getElementById('share-card-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'share-card-overlay';
+    document.body.appendChild(overlay);
+  }
+
+  overlay.innerHTML = `
+    <div id="share-card-xhs">
+      <div class="xhs-top">
+        <div class="xhs-badge">RZTI 人格测试</div>
+        <div class="xhs-emoji">${type.emoji}</div>
+        <div class="xhs-name">${type.name}</div>
+        <div class="xhs-role">${type.role}</div>
+      </div>
+      <div class="xhs-body">
+        <div class="xhs-stat-row">
+          <div class="xhs-stat">
+            <div class="xhs-stat-val">${type.rarity}%</div>
+            <div class="xhs-stat-lbl">人群占比</div>
+          </div>
+          <div class="xhs-stat">
+            <div class="xhs-stat-val" style="font-size:15px;">${type.role}</div>
+            <div class="xhs-stat-lbl">天然角色</div>
+          </div>
+        </div>
+        <div class="sc-section-title">维度解析</div>
+        ${dimBarsHTML}
+      </div>
+      <div class="xhs-footer">
+        <div class="xhs-cta">你也来测测？你是哪种 Builder 🧬</div>
+        <div class="xhs-cta-sub">RZTI 创客与极客人格测试</div>
+      </div>
+    </div>
+    <div id="share-img-wrap" style="display:none;">
+      <img id="share-img" />
+      <div class="sc-img-tip">长按图片保存到相册</div>
+    </div>
+    <div class="sc-btns">
+      <button class="sc-btn sc-btn-download" onclick="downloadXHSCard()">📸 保存图片</button>
+      <button class="sc-btn sc-btn-close" onclick="closeShareCard()">关闭</button>
+    </div>
+  `;
+
+  overlay.classList.add('active');
+
+  // 预加载 html2canvas
+  if (typeof html2canvas === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+    document.head.appendChild(script);
+  }
+}
+
+function downloadXHSCard() {
+  const card = document.getElementById('share-card-xhs');
+  const imgWrap = document.getElementById('share-img-wrap');
+  if (!card) return;
+
+  if (typeof html2canvas === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+    script.onload = () => downloadXHSCard();
+    document.head.appendChild(script);
+    return;
+  }
+
+  const btn = document.querySelector('.sc-btn-download');
+  if (btn) btn.textContent = '生成中...';
+
+  html2canvas(card, {
+    scale: 2,
+    backgroundColor: null,
+    useCORS: true,
+    allowTaint: true,
+  }).then(canvas => {
+    const isMobile = /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent);
+    const dataUrl = canvas.toDataURL('image/png');
+
+    if (isMobile && imgWrap) {
+      const img = document.getElementById('share-img');
+      if (img) img.src = dataUrl;
+      card.style.display = 'none';
+      imgWrap.style.display = 'flex';
+      if (btn) {
+        btn.textContent = '⬅ 返回';
+        btn.onclick = function() {
+          imgWrap.style.display = 'none';
+          card.style.display = '';
+          btn.textContent = '📸 保存图片';
+          btn.onclick = downloadXHSCard;
+        };
+      }
+    } else {
+      const link = document.createElement('a');
+      link.download = `RZTI_XHS_${getResultKey()}.png`;
+      link.href = dataUrl;
+      link.click();
+      if (btn) btn.textContent = '✅ 已保存';
+      setTimeout(() => { if (btn) btn.textContent = '📸 保存图片'; }, 2000);
+    }
+  }).catch(err => {
+    console.error('html2canvas error:', err);
+    if (btn) btn.textContent = '❌ 失败，请重试';
+    setTimeout(() => { if (btn) btn.textContent = '📸 保存图片'; }, 2000);
+  });
 }
 
 function closeShareCard() {
@@ -1570,6 +1917,7 @@ document.addEventListener('click', function(e) {
 
 function downloadShareCard() {
   const card = document.getElementById('share-card');
+  const imgWrap = document.getElementById('share-img-wrap');
   if (!card) return;
   
   if (typeof html2canvas === 'undefined') {
@@ -1590,14 +1938,33 @@ function downloadShareCard() {
     useCORS: true,
     allowTaint: true,
   }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = `RZTI_${getResultKey()}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    if (btn) btn.textContent = '\u2705 \u5df2\u4fdd\u5b58';
-    setTimeout(() => {
-      if (btn) btn.textContent = '\ud83d\udcf8 \u4fdd\u5b58\u56fe\u7247';
-    }, 2000);
+    const isMobile = /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent);
+    const dataUrl = canvas.toDataURL('image/png');
+    
+    if (isMobile && imgWrap) {
+      const img = document.getElementById('share-img');
+      if (img) img.src = dataUrl;
+      card.style.display = 'none';
+      imgWrap.style.display = 'flex';
+      if (btn) {
+        btn.textContent = '⬅ 返回';
+        btn.onclick = function() {
+          imgWrap.style.display = 'none';
+          card.style.display = '';
+          btn.textContent = '📸 保存图片';
+          btn.onclick = downloadShareCard;
+        };
+      }
+    } else {
+      const link = document.createElement('a');
+      link.download = `RZTI_${getResultKey()}.png`;
+      link.href = dataUrl;
+      link.click();
+      if (btn) btn.textContent = '✅ 已保存';
+      setTimeout(() => {
+        if (btn) btn.textContent = '📸 保存图片';
+      }, 2000);
+    }
   }).catch(err => {
     console.error('html2canvas error:', err);
     if (btn) btn.textContent = '\u274c \u5931\u8d25\uff0c\u8bf7\u91cd\u8bd5';
